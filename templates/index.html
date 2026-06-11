@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vorschmiedefreiform Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>Vorschmiedefreiform</h2>
+        <a href="#upload_section" class="sidebar-step-link active" data-step-id="upload" data-step-status="active">
+            <span class="sidebar-step-main">
+                <span class="sidebar-step-icon">1</span>
+                <span class="sidebar-step-title">STEP Upload</span>
+            </span>
+            <span class="sidebar-step-state">aktiv</span>
+        </a>
+        <a href="#reference_section" class="sidebar-step-link" data-step-id="reference" data-step-status="pending">
+            <span class="sidebar-step-main">
+                <span class="sidebar-step-icon">2</span>
+                <span class="sidebar-step-title">Fertigteil</span>
+            </span>
+            <span class="sidebar-step-state">offen</span>
+        </a>
+        <a href="#rotation_section" class="sidebar-step-link" data-step-id="rotation" data-step-status="pending">
+            <span class="sidebar-step-main">
+                <span class="sidebar-step-icon">3</span>
+                <span class="sidebar-step-title">Drehung</span>
+            </span>
+            <span class="sidebar-step-state">offen</span>
+        </a>
+        <a href="#preform_section" class="sidebar-step-link" data-step-id="preform" data-step-status="pending">
+            <span class="sidebar-step-main">
+                <span class="sidebar-step-icon">4</span>
+                <span class="sidebar-step-title">Freiform</span>
+            </span>
+            <span class="sidebar-step-state">offen</span>
+        </a>
+        <a href="#log_section" class="sidebar-step-link" data-step-id="log" data-step-status="pending">
+            <span class="sidebar-step-main">
+                <span class="sidebar-step-icon">5</span>
+                <span class="sidebar-step-title">Protokoll</span>
+            </span>
+            <span class="sidebar-step-state">offen</span>
+        </a>
+    </aside>
+
+    <main class="container">
+        <h1>Vorschmiedefreiform Generator</h1>
+        <div id="global_status" class="global-status info">
+            Eigenstaendige Software fuer STEP/STP-Upload, Ausrichtung, Vorschmiedefreiform und Export als STL, STEP oder Zeichnung.
+        </div>
+
+        <div id="upload_section" class="section">
+            <h3>STEP/STP vom Gesenkschmiedeteil hochladen</h3>
+            <form id="uploadForm">
+                <label for="file" style="font-weight:600; margin-bottom:5px; display:block;">
+                    Bitte 3D-Modell als STEP oder STP hochladen:
+                </label>
+                <input type="file" id="file" accept=".step,.stp" required>
+                <div class="hint" style="margin-top:10px;">
+                    Aus der 3D-Geometrie wird eine Vorschmiedefreiform abgeleitet, die als Vorform ins Gesenk eingelegt und anschliessend fertiggeschmiedet werden kann.
+                </div>
+                <div class="button-row">
+                    <button class="btn" type="submit">STEP/STP verarbeiten</button>
+                    <button class="btn btn-red" id="clear" type="button">Eingaben löschen</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="reference_section" class="section">
+            <h3>Referenzgeometrie</h3>
+            <div id="partInfo" class="info">Noch keine STEP/STP-Datei geladen.</div>
+            <h4>STL-Ansicht Fertigteil</h4>
+            <div id="viewer_reference" class="viewer stl-canvas-viewer">
+                <div class="viewer-placeholder">Nach dem Upload erscheint hier die STL-Ansicht des Fertigteils.</div>
+            </div>
+            <div class="button-row" id="referenceDownloads" style="margin-top:12px;"></div>
+        </div>
+
+        <div id="rotation_section" class="section">
+            <h3>Fertigteil-Ausrichtung (X/Y-Achsen-Rotation)</h3>
+            <div class="hint">
+                Drehen Sie das Teil um die X- und Y-Achsen, falls es nach dem STEP/STP-Upload noch nicht korrekt ausgerichtet ist.
+            </div>
+            <div class="simulation-grid" style="margin-top:12px;">
+                <label>Rotation um X-Achse [Grad]
+                    <input id="rotX" type="number" min="0" max="360" step="1" value="0">
+                </label>
+                <label>Rotation um Y-Achse [Grad]
+                    <input id="rotY" type="number" min="0" max="360" step="1" value="0">
+                </label>
+            </div>
+            <div class="button-row">
+                <button class="btn" id="rotateBtn" type="button">Rotation anwenden + neu berechnen</button>
+            </div>
+            <div id="rotationInfo" class="info">Rotation: nicht angewendet.</div>
+        </div>
+
+        <div id="preform_section" class="section">
+            <h3>Automatische Vorschmiedefreiform-Generierung</h3>
+            <div class="info" style="margin-bottom: 10px;">
+                <strong>Vorform fuer das Fertigschmieden im Gesenk</strong><br>
+                Die Vorschmiedefreiform wird aus der STEP/STP-Referenz erzeugt und auf ca. 75% der Fertigteilgeometrie in der X/Y-Ebene skaliert. Die Z-Hoehe wird ueber Volumenerhaltung berechnet.
+            </div>
+            <div class="simulation-grid">
+                <label>Abdeckung X/Y [%]
+                    <input id="coverage" type="number" min="40" max="100" step="1" value="75">
+                </label>
+                <label>Faserverlauf / Lage
+                    <select id="rotate90">
+                        <option value="0">Bauteillage unveraendert</option>
+                        <option value="90">Bauteil 90 Grad zur Seite drehen</option>
+                    </select>
+                </label>
+            </div>
+            <div class="button-row">
+                <button class="btn" id="generateBtn" type="button">Vorschmiedefreiform erzeugen (mit Zeichnung)</button>
+            </div>
+            <div id="preformInfo" class="info">Noch keine Vorschmiedefreiform erzeugt.</div>
+            <h4>STL-Ansicht Vorschmiedefreiform</h4>
+            <div id="viewer_preform" class="viewer stl-canvas-viewer">
+                <div class="viewer-placeholder">Nach der Generierung erscheint hier die STL-Ansicht der Vorschmiedefreiform.</div>
+            </div>
+            <div class="button-row" id="preformDownloads" style="margin-top:12px;"></div>
+        </div>
+
+        <div id="log_section" class="section">
+            <h3>Protokoll</h3>
+            <pre id="log" class="info">Bereit.</pre>
+        </div>
+    </main>
+
+    <script src="/static/stl-viewer.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
