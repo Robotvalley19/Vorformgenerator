@@ -1,4 +1,4 @@
-# Vorschmiedefreiform Generator
+# Vorformgenerator
 
 Standalone-Websoftware zur automatischen Erzeugung einer Vorschmiedefreiform aus STEP/STP-Geometrien fuer das Gesenkschmieden. Die Software ist fuer Linux und Windows geeignet.
 
